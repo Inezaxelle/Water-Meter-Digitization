@@ -3,7 +3,7 @@ import pytesseract
 import matplotlib.pyplot as plt
 
 # Read the image using OpenCV
-image = cv2.imread('image.jpg')
+image = cv2.imread('image.png')
 
 # Convert the image to grayscale
 gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
