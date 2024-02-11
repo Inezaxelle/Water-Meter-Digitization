@@ -1,29 +1,22 @@
 import cv2
+import numpy as np
 import pytesseract
-import matplotlib.pyplot as plt
 
-# Read the image using OpenCV
-image = cv2.imread('image.png')
+# Set Tesseract executable path
+pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
 
-# Convert the image to grayscale
+# Load image, convert to grayscale, sharpen, apply Otsu's threshold
+image = cv2.imread('img.jpg')
 gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+sharpen_kernel = np.array([[-1,-1,-1], [-1,9,-1], [-1,-1,-1]])
+sharpened_image = cv2.filter2D(gray_image, -1, sharpen_kernel)
+thresholded_image = cv2.threshold(sharpened_image, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
 
-# Apply thresholding to segment the text from the background
-_, threshold_image = cv2.threshold(gray_image, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
+# Perform OCR
+extracted_text = pytesseract.image_to_string(thresholded_image, lang='eng', config='--psm 6')
 
-# Perform some morphological operations to enhance text extraction
-kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
-morph_image = cv2.morphologyEx(threshold_image, cv2.MORPH_CLOSE, kernel)
+# Extract numbers from the text
+extracted_numbers = ''.join(filter(str.isdigit, extracted_text))
 
-# Use Tesseract to perform OCR (Optical Character Recognition)
-text = pytesseract.image_to_string(morph_image)
-
-# Display the image using Matplotlib
-plt.imshow(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
-plt.title('Original Image')
-plt.axis('off')
-plt.show()
-
-# Print the extracted text
-print("Extracted Text:")
-print(text)
+# Print extracted numbers
+print("Extracted Numbers:", extracted_numbers)
